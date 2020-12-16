@@ -16,7 +16,7 @@ def cria_posicao(c, l):
     ):
         raise ValueError('cria_posicao: argumentos invalidos')
 
-    return [ord(c) - ord('a'), ord(l) - ord('1')]
+    return (ord(c) - ord('a')) * 3 + (ord(l) - ord('1'))
 
 def cria_posicao_copia(p):
     # cria_posicao_copia: posicao -> posicao
@@ -29,14 +29,14 @@ def obter_pos_c(p):
     # obter_pos_c: posicao -> str
     """Devolve a componente coluna c da posicao p."""
 
-    return chr(p[0] + ord('a'))
+    return chr(p // 3 + ord('a'))
 
 
 def obter_pos_l(p):
     # obter_pos_l: posicao -> str
     """Devolve a componente linha l da posicao p."""
 
-    return chr(p[1] + ord('1'))
+    return chr(p % 3 + ord('1'))
 
 
 def eh_posicao(arg):
@@ -44,10 +44,7 @@ def eh_posicao(arg):
     """Devolve True caso o seu argumento seja um TAD posicao e False caso
         contrario."""
 
-    return (
-        isinstance(arg, list) and len(arg) == 2 and
-        all(map(lambda x: isinstance(x, int) and 0 <= x <= 2, arg))
-    )
+    return isinstance(arg, int) and 0 <= arg <= 0
 
 def posicoes_iguais(p1, p2):
     # posicoes_iguais: posicao x posicao -> booleano
@@ -74,5 +71,15 @@ def obter_posicoes_adjacentes(p):
         ordem de leitura do tabuleiro."""
 
     pass
+
+
+###############################################################################
+# TAD PECA
+###############################################################################
+def cria_peca(s):
+    # cria_peca: str -> peca
+    """Recebe uma cadeia de carateres correspondente ao identificador de um dos
+        dois jogadores ('X' ou 'O') ou a uma peca livre (' ') e devolve a peca
+        correspondente."""
 
 
