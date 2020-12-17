@@ -14,7 +14,7 @@ def cria_posicao(c, l):
     ):
         raise ValueError('cria_posicao: argumentos invalidos')
 
-    return (ord(l) - ord('1')) * 3 + ord(a) - ord('a')
+    return (ord(l) - ord('1')) * 3 + ord(c) - ord('a')
 
 def cria_posicao_copia(p):
     # cria_posicao_copia: posicao -> posicao
@@ -42,10 +42,7 @@ def eh_posicao(arg):
     """Devolve True caso o seu argumento seja um TAD posicao e False caso
         contrario."""
 
-    return (
-        isinstance(arg, list) and len(arg) == 2 and
-        all([isinstance(n, int) and 0 <= n < 3 for n in arg])
-    )
+    return isinstance(arg, int) and 0 <= arg < 9
 
 
 def posicoes_iguais(p1, p2):
