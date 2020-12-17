@@ -120,6 +120,7 @@ def obter_posicoes_adjacentes(p):
     return pos_adjs
 """
 
+
 ###############################################################################
 # TAD PECA
 ###############################################################################
@@ -129,15 +130,49 @@ def cria_peca(s):
         dois jogadores ('X' ou 'O') ou a uma peca livre (' ') e devolve a peca
         correspondente."""
 
-    identificadors = {'X': 1, 'O': -1, ' ': 0}
-
-    if s not in identificadors:
+    if s not in ('X', 'O', ' '):
         raise ValueError('cria_peca: argumento invalido')
 
-    return identificadors[s]
+    return s
+
 
 def cria_copia_peca(j):
     # cria_copia_peca: peca -> peca
     """Recebe uma peca e devolve uma copia nova da peca."""
 
     return j
+
+
+def eh_peca(arg):
+    # eh_peca: universal -> booleano
+    """Devolve True caso o seu argumento seja um TAD peca e False caso
+        contrario."""
+
+    return arg in ('X', 'O', ' ')
+
+
+def pecas_iguais(j1, j2):
+    # pecas_iguais: peca x peca -> booleano
+    """Devolve True apenas se p1 e p2 sao pecas e sao iguais."""
+
+    return eh_peca(j1) and eh_peca(j2) and j1 == j2
+
+
+def peca_para_str(j):
+    # peca_para_str: peca -> str
+    """Devolve a cadeia de caracteres que representa o jogador dono da peca,
+        isto e, '[X]', '[O]' ou '[ ]'."""
+
+    return '[' + j + ']'
+
+
+def peca_para_inteiro(j):
+    # peca_para_inteiro: peca -> N
+    """Devolve um inteiro valor 1, -1 ou 0 dependendo se a peca e do jogador
+        'X', 'O' ou livre, respetivamente."""
+
+    pecas = {'X': 1, 'O': -1, ' ': 0}
+
+    return {cria_peca(k): v for k, v in pecas.items()}[j]
+
+
