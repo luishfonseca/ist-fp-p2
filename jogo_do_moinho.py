@@ -14,27 +14,27 @@ def cria_posicao(c, l):
     ):
         raise ValueError('cria_posicao: argumentos invalidos')
 
-    return [ord(c) - ord('a'), ord(l) - ord('1')]
+    return (ord(l) - ord('1')) * 3 + ord(a) - ord('a')
 
 def cria_posicao_copia(p):
     # cria_posicao_copia: posicao -> posicao
     """Recebe uma posicao e devolve uma copia nova da posicao."""
 
-    return p.copy()
+    return p
 
 
 def obter_pos_c(p):
     # obter_pos_c: posicao -> str
     """Devolve a componente coluna c da posicao p."""
 
-    return chr(p[0] + ord('a'))
+    return chr(p % 3 + ord('a'))
 
 
 def obter_pos_l(p):
     # obter_pos_l: posicao -> str
     """Devolve a componente linha l da posicao p."""
 
-    return chr(p[1] + ord('1'))
+    return chr(p // 3 + ord('1'))
 
 
 def eh_posicao(arg):
@@ -122,3 +122,25 @@ def obter_posicoes_adjacentes(p):
 
     return pos_adjs
 """
+
+###############################################################################
+# TAD PECA
+###############################################################################
+def cria_peca(s):
+    # cria_peca: str -> peca
+    """Recebe uma cadeia de carateres correspondente ao identificador de um dos
+        dois jogadores ('X' ou 'O') ou a uma peca livre (' ') e devolve a peca
+        correspondente."""
+
+    identificadors = {'X': 1, 'O': -1, ' ': 0}
+
+    if s not in identificadors:
+        raise ValueError('cria_peca: argumento invalido')
+
+    return identificadors[s]
+
+def cria_copia_peca(j):
+    # cria_copia_peca: peca -> peca
+    """Recebe uma peca e devolve uma copia nova da peca."""
+
+    return j
