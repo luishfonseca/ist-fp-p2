@@ -124,14 +124,14 @@ def cria_peca(s):
     if s not in ('X', 'O', ' '):
         raise ValueError('cria_peca: argumento invalido')
 
-    return [s]
+    return s
 
 
 def cria_copia_peca(j):
     # cria_copia_peca: peca -> peca
     """Recebe uma peca e devolve uma copia nova da peca."""
 
-    return j.copy()
+    return j
 
 
 def eh_peca(arg):
@@ -139,7 +139,7 @@ def eh_peca(arg):
     """Devolve True caso o seu argumento seja um TAD peca e False caso
         contrario."""
 
-    return isinstance(arg, list) and len(arg) == 1 and arg[0] in ('X', 'O', ' ')
+    return arg in ('X', 'O', ' ')
 
 
 def pecas_iguais(j1, j2):
@@ -154,7 +154,7 @@ def peca_para_str(j):
     """Devolve a cadeia de caracteres que representa o jogador dono da peca,
         isto e, '[X]', '[O]' ou '[ ]'."""
 
-    return '[' + j[0] + ']'
+    return '[' + j + ']'
 
 
 def peca_para_inteiro(j):
