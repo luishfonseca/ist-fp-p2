@@ -8,33 +8,30 @@ def cria_posicao(c, l):
     """Recebe duas cadeias de carateres correspondentes a coluna c e a linha l
         de uma posicao e devolve a posicao correspondente."""
 
-    if not (
-        isinstance(c, str) and isinstance(l, str) and len(c) == len(l) == 1 and
-        ord('a') <= ord(c) <= ord('c') and ord('1') <= ord(l) <= ord('3')
-    ):
+    if c not in ('a', 'b', 'c') or l not in ('1', '2', '3'):
         raise ValueError('cria_posicao: argumentos invalidos')
 
-    return (ord(l) - ord('1')) * 3 + ord(c) - ord('a')
+    return [c, l]
 
 def cria_posicao_copia(p):
     # cria_posicao_copia: posicao -> posicao
     """Recebe uma posicao e devolve uma copia nova da posicao."""
 
-    return p
+    return p.copy()
 
 
 def obter_pos_c(p):
     # obter_pos_c: posicao -> str
     """Devolve a componente coluna c da posicao p."""
 
-    return chr(p % 3 + ord('a'))
+    return p[0]
 
 
 def obter_pos_l(p):
     # obter_pos_l: posicao -> str
     """Devolve a componente linha l da posicao p."""
 
-    return chr(p // 3 + ord('1'))
+    return p[1]
 
 
 def eh_posicao(arg):
@@ -42,7 +39,10 @@ def eh_posicao(arg):
     """Devolve True caso o seu argumento seja um TAD posicao e False caso
         contrario."""
 
-    return isinstance(arg, int) and 0 <= arg < 9
+    return (
+        isinstance(arg, list) and len(arg) == 2 and
+        p[0] in ('a','b','c') and p[1] in ('1','2','3')
+    )
 
 
 def posicoes_iguais(p1, p2):
@@ -62,8 +62,8 @@ def posicao_para_str(p):
 
 def posicao_para_inteiro(p):
     # posicao_para_inteiro: posicao -> N
-    """Devolve um inteiro de 0 a 8 que corresponde ao indice da posicao p
-        na sucessao 'a1', 'b2', 'b3', 'a2', ..., 'b3', 'c3'."""
+    """Devolve um inteiro de 0 a 8 que corresponde ao indice da posicao p na
+        sucessao 'a1', 'b1', 'c1', 'a2', 'b2', 'c2', 'a3', 'b3', 'c3'."""
 
     pos_c = ord(obter_pos_c(p)) - ord('a')
     pos_l = ord(obter_pos_l(p)) - ord('1')
@@ -124,14 +124,14 @@ def cria_peca(s):
     if s not in ('X', 'O', ' '):
         raise ValueError('cria_peca: argumento invalido')
 
-    return s
+    return [s]
 
 
 def cria_copia_peca(j):
     # cria_copia_peca: peca -> peca
     """Recebe uma peca e devolve uma copia nova da peca."""
 
-    return j
+    return j.copy()
 
 
 def eh_peca(arg):
@@ -139,7 +139,7 @@ def eh_peca(arg):
     """Devolve True caso o seu argumento seja um TAD peca e False caso
         contrario."""
 
-    return arg in ('X', 'O', ' ')
+    return isinstance(arg, list) and len(arg) == 1 and arg[0] in ('X', 'O', ' ')
 
 
 def pecas_iguais(j1, j2):
@@ -154,7 +154,7 @@ def peca_para_str(j):
     """Devolve a cadeia de caracteres que representa o jogador dono da peca,
         isto e, '[X]', '[O]' ou '[ ]'."""
 
-    return '[' + j + ']'
+    return '[' + j[0] + ']'
 
 
 def peca_para_inteiro(j):
