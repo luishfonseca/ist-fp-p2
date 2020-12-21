@@ -13,8 +13,8 @@ def cria_posicao(c, l):
 
     return [c, l]
 
-def cria_posicao_copia(p):
-    # cria_posicao_copia: posicao -> posicao
+def cria_copia_posicao(p):
+    # cria_copia_posicao: posicao -> posicao
     """Recebe uma posicao e devolve uma copia nova da posicao."""
 
     return p.copy()
@@ -41,7 +41,7 @@ def eh_posicao(arg):
 
     return (
         isinstance(arg, list) and len(arg) == 2 and
-        p[0] in ('a','b','c') and p[1] in ('1','2','3')
+        arg[0] in ('a','b','c') and arg[1] in ('1','2','3')
     )
 
 
@@ -124,14 +124,14 @@ def cria_peca(s):
     if s not in ('X', 'O', ' '):
         raise ValueError('cria_peca: argumento invalido')
 
-    return s
+    return [s]
 
 
 def cria_copia_peca(j):
     # cria_copia_peca: peca -> peca
     """Recebe uma peca e devolve uma copia nova da peca."""
 
-    return j
+    return j.copy()
 
 
 def eh_peca(arg):
@@ -139,7 +139,7 @@ def eh_peca(arg):
     """Devolve True caso o seu argumento seja um TAD peca e False caso
         contrario."""
 
-    return arg in ('X', 'O', ' ')
+    return isinstance(arg, list) and len(arg) == 1 and arg[0] in ('X', 'O', ' ')
 
 
 def pecas_iguais(j1, j2):
@@ -154,7 +154,7 @@ def peca_para_str(j):
     """Devolve a cadeia de caracteres que representa o jogador dono da peca,
         isto e, '[X]', '[O]' ou '[ ]'."""
 
-    return '[' + j + ']'
+    return '[' + j[0] + ']'
 
 
 def peca_para_inteiro(j):
@@ -214,6 +214,7 @@ def obter_peca(t, p):
 
     return t[pos]
 
+
 def obter_vetor(t, s):
     # tabuleiro x str -> tuplo de pecas
     """Devolve todas as pecas da linha ou coluna especificada pelo seu
@@ -263,6 +264,14 @@ def move_peca(t, p1, p2):
     return remove_peca(t, p1)
 
 
+def eh_vitoria(vet):
+    # eh_vitoria: tuplo de pecas -> booleano
+    """Devolve True caso o tuplo de pecas consista em 3 pecas do mesmo
+        jogador."""
+
+    return vet.count(cria_peca('X')) == 3 or vet.count(cria_peca('O')) == 3
+
+
 def eh_tabuleiro(arg):
     # eh_tabuleiro: universal -> booleano
     """Devolve True caso o seu argumento seja um TAD tabuleiro e False caso
@@ -277,15 +286,15 @@ def eh_tabuleiro(arg):
     Xs = arg.count(cria_peca('X'))
     Os = arg.count(cria_peca('O'))
 
-    if not (Xs - Os in (-1, 1) and Xs <= 3 and Os <= 3):
+    if abs(Xs - Os) > 1 or Xs > 3 or Os > 3:
         return False
 
     ss = ('a','b','c','1','2','3')
     ganhadores = 0
 
     for s in ss:
-        vet = obter_vetor(t, s)
-        if vet.count(cria_peca('X')) == 3 or vet.count(cria_peca('O')) == 3:
+        vet = obter_vetor(arg, s)
+        if eh_vitoria(vet):
             ganhadores += 1
 
     return ganhadores <= 1
@@ -367,7 +376,7 @@ def obter_ganhador(t):
 
     for s in ss:
         vet = obter_vetor(t, s)
-        if vet.count(cria_peca('X')) == 3 or vet.count(cria_peca('O')) == 3:
+        if eh_vitoria(vet):
             return vet[0]
 
     return cria_peca(' ')
@@ -568,8 +577,8 @@ def canto_vazio(t, _):
 
     ps_livres = obter_posicoes_livres(t)
 
-    for c in cs:
-        for l in ls:
+    for l in ls:
+        for c in cs:
             p = cria_posicao(c, l)
             if p in ps_livres:
                 return p
@@ -645,7 +654,10 @@ def minimax(t, j, profundidade):
                         novo_val, novo_movs = \
                             aux_minimax(novo_t, oponente, d - 1, movs + (mov,))
 
-                        if not melhor_movs or para_alterar(j, novo_val, max_val):
+                        if (
+                            not melhor_movs or
+                            para_alterar(j, novo_val, max_val)
+                        ):
                             max_val, melhor_movs = novo_val, novo_movs
 
             return max_val, melhor_movs
