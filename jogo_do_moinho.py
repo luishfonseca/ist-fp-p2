@@ -1,7 +1,83 @@
 # 99266 Luis Fonseca
 
 ###############################################################################
+# FUNCOES AUXILIARES
+###############################################################################
+def pertence(el, els, teste):
+    # pertence: el x iter x func -> bool
+    """Verifica se um elemento pertence a um iteravel usando o teste dado."""
+
+    return any(teste(el, el2) for el2 in els)
+
+
+def conta(el, els, teste):
+    #conta: el x iter x func -> N
+    """Retorna a quantidade de elementos el num iteravel usando o teste dado."""
+
+    cnt = 0
+    for el2 in els:
+        if teste(el, el2):
+            cnt += 1
+
+    return cnt
+
+
+def eh_adjacente(p1_c, p1_l, p2_c, p2_l):
+    # eh_adjacente: inteiro x inteiro x inteiro x inteiro -> booleano
+    """Devolve um booleano caso a pseudo posicao p2 representada por p2_c e
+        p2_l seja valida e tenha uma relacao de adjacencia com a pseudo posicao
+        representada por p1_c e p2_l"""
+
+    delta_c = p2_c - p1_c
+    delta_l = p2_l - p1_l
+
+    return (
+        (p1_c != p2_c or p1_l != p2_l) and  # p1 != p2
+        0 <= p2_c < 3 and 0 <= p2_l < 3 and # p2 eh valida
+        (delta_c == 0 or delta_l == 0 or    # p2 eh horizontal ou vertical a p1
+        (p1_l * 3 + p1_c) % 2 == 0)     # p2 eh canto ou centro e diagonal a p1
+    )
+
+
+def eh_vitoria(vet):
+    # eh_vitoria: tuplo de pecas -> booleano
+    """Devolve True caso o tuplo de pecas consista em 3 pecas do mesmo
+        jogador."""
+
+    return (
+        conta_pecas(cria_peca('X'), vet) == 3 or
+        conta_pecas(cria_peca('O'), vet) == 3
+    )
+
+
+def linha_para_str(t, l):
+    # linha_para_str: tabuleiro x str -> str
+    """Devolve a cadeia de caracteres que representa a linha do tabuleiro."""
+
+    out = l + ' '
+
+    for j in obter_vetor(t, l):
+        out += peca_para_str(j) + '-'
+
+    return out[:-1] + '\n'
+
+
+###############################################################################
 # TAD POSICAO
+# Rep. Interna: Lista de dois elementos. O primeiro corresponde a coluna ('a',
+#               'b' ou 'c'), o segundo correponde a linha ('1', '2' ou '3').
+# Operacoes basicas:
+#   cria_posicao: str x str -> posicao
+#   cria_copia_posicao: posicao -> posicao
+#   obter_pos_c: posicao -> str
+#   obter_pos_l: posicao -> str
+#   eh_posicao: universal -> booleano
+#   posicoes_iguais: posicao x posicao -> booleano
+#   posicao_para_str: posicao -> str
+# Funcoes de alto nivel:
+#   obter_posicoes_adjacentes: posicao -> tuplo de posicoes
+#   posicao_para_inteiro: posicao -> N
+#   pertence_pos: posicao x iter de posicoes -> bool
 ###############################################################################
 def cria_posicao(c, l):
     # cria_posicao: str x str -> posicao
@@ -70,23 +146,6 @@ def posicao_para_inteiro(p):
     return pos_l * 3 + pos_c
 
 
-def eh_adjacente(p1_c, p1_l, p2_c, p2_l):
-    # eh_adjacente: inteiro x inteiro x inteiro x inteiro -> booleano
-    """Devolve um booleano caso a pseudo posicao p2 representada por p2_c e
-        p2_l seja valida e tenha uma relacao de adjacencia com a pseudo posicao
-        representada por p1_c e p2_l"""
-
-    delta_c = p2_c - p1_c
-    delta_l = p2_l - p1_l
-
-    return (
-        (p1_c != p2_c or p1_l != p2_l) and  # p1 != p2
-        0 <= p2_c < 3 and 0 <= p2_l < 3 and # p2 eh valida
-        (delta_c == 0 or delta_l == 0 or    # p2 eh horizontal ou vertical a p1
-        (p1_l * 3 + p1_c) % 2 == 0)     # p2 eh canto ou centro e diagonal a p1
-    )
-
-
 def obter_posicoes_adjacentes(p):
     # obter_posicoes_adjacentes: posicao -> tuplo de posicoes
     """Devolve um tuplo com as posicoes adjacentes a posicao p de acordo com a
@@ -112,8 +171,26 @@ def obter_posicoes_adjacentes(p):
     return pos_adjs
 
 
+def pertence_pos(p, ps):
+    # pertence_pos: posicao x iter de posicoes -> bool
+    """Verifica se uma posicao p pertence a um iteravel de posicoes."""
+
+    return pertence(p, ps, posicoes_iguais)
+
+
 ###############################################################################
 # TAD PECA
+# Rep. Interna: lista de um elemento ('X', 'O' ou ' ').
+# Operacoes basicas:
+#   cria_peca: str -> peca
+#   cria_copia_peca: peca -> peca
+#   eh_peca: universal -> booleano
+#   pecas_iguais: peca x peca -> booleano
+#   peca_para_str: peca -> str
+# Funcoes de alto nivel:
+#   peca_para_inteiro: peca -> N
+#   inteiro_para_peca: N -> peca
+#   obter_oponente: peca -> peca
 ###############################################################################
 def cria_peca(s):
     # cria_peca: str -> peca
@@ -168,14 +245,13 @@ def peca_para_inteiro(j):
 
 
 def inteiro_para_peca(n):
-    #inteiro_para_peca: N -> peca
+    # inteiro_para_peca: N -> peca
     """Devolve a peca do jogador 'X', 'O' ou livre dependendo se o inteiro eh
         1, -1 ou 0, respetivamente."""
 
     pecas = {1: 'X', -1: 'O', 0: ' '}
 
     return cria_peca(pecas[n])
-
 
 
 def obter_oponente(j):
@@ -187,8 +263,34 @@ def obter_oponente(j):
     return inteiro_para_peca(oponente)
 
 
+def conta_pecas(j, js):
+    # conta_pecas: peca x iter de pecas -> N
+    """Retorna a quantidade de pecas j num iteravel."""
+
+    return conta(j, js, pecas_iguais)
+
+
 ###############################################################################
 # TAD TABULEIRO
+# Rep. Interna: lista de nove pecas. Indices correspondem a ordem de leitura
+#               definida da esquerda para a direita seguida de cima para baixo.
+# Operacoes basicas:
+    # cria_tabuleiro: {} -> tabuleiro
+    # cria_copia_tabuleiro: tabuleiro -> tabuleiro
+    # obter_peca: tabuleiro x posicao -> peca
+    # obter_vetor: tabuleiro x str -> tuplo de pecas
+    # coloca_peca: tabuleiro x peca x posicao -> tabuleiro
+    # remove_peca: tabuleiro x posicao -> tabuleiro
+    # move_peca: tabuleiro x posicao x posicao -> tabuleiro
+    # eh_tabuleiro: universal -> booleano
+    # eh_posicao_livre: tabuleiro x posicao -> booleano
+    # tabuleiros_iguais: tabuleiro x tabuleiro -> booleano
+    # tabuleiro_para_str: tabuleiro -> str
+    # tuplo_para_tabuleiro: tuplo -> tabuleiro
+# Funcoes de alto nivel:
+    # obter_ganhador: tabuleiro -> peca
+    # obter_posicoes_livres: tabuleiro -> tuplo de posicoes
+    # obter_posicoes_jogador: tabuleiro x peca -> tuplo de posicoes
 ###############################################################################
 def cria_tabuleiro():
     # cria_tabuleiro: {} -> tabuleiro
@@ -202,11 +304,15 @@ def cria_copia_tabuleiro(t):
     # cria_copia_tabuleiro: tabuleiro -> tabuleiro
     """Recebe um tabuleiro e devolve uma copia nova do tabuleiro."""
 
-    return t.copy()
+    copia = []
+    for j in t:
+        copia.append(cria_copia_peca(j))
+
+    return copia
 
 
 def obter_peca(t, p):
-    # tabuleiro x posicao -> peca
+    # obter_peca: tabuleiro x posicao -> peca
     """Devolve a peca na posicao p do tabuleiro. Se a posicao nao estiver
         ocupada, devolve umaa peca livre."""
 
@@ -216,7 +322,7 @@ def obter_peca(t, p):
 
 
 def obter_vetor(t, s):
-    # tabuleiro x str -> tuplo de pecas
+    # obter_vetor: tabuleiro x str -> tuplo de pecas
     """Devolve todas as pecas da linha ou coluna especificada pelo seu
         argumento."""
 
@@ -229,7 +335,7 @@ def obter_vetor(t, s):
         for l in ls:
             pecas += (obter_peca(t, cria_posicao(s, l)), )
 
-    if s in ls:
+    else:
         for c in cs:
             pecas += (obter_peca(t, cria_posicao(c, s)), )
 
@@ -260,16 +366,9 @@ def move_peca(t, p1, p2):
     """Modifica destrutivamente o tabuleiro t movendo a peca que se encontra na
         posicao p1 para a posicao p2, e devolve o proprio tabuleiro."""
 
-    coloca_peca(t, obter_peca(t, p1), p2)
-    return remove_peca(t, p1)
-
-
-def eh_vitoria(vet):
-    # eh_vitoria: tuplo de pecas -> booleano
-    """Devolve True caso o tuplo de pecas consista em 3 pecas do mesmo
-        jogador."""
-
-    return vet.count(cria_peca('X')) == 3 or vet.count(cria_peca('O')) == 3
+    j = obter_peca(t, p1)
+    remove_peca(t, p1)
+    return coloca_peca(t, j, p2)
 
 
 def eh_tabuleiro(arg):
@@ -283,12 +382,6 @@ def eh_tabuleiro(arg):
     ):
         return False
 
-    Xs = arg.count(cria_peca('X'))
-    Os = arg.count(cria_peca('O'))
-
-    if abs(Xs - Os) > 1 or Xs > 3 or Os > 3:
-        return False
-
     ss = ('a','b','c','1','2','3')
     ganhadores = 0
 
@@ -297,7 +390,10 @@ def eh_tabuleiro(arg):
         if eh_vitoria(vet):
             ganhadores += 1
 
-    return ganhadores <= 1
+    Xs = conta_pecas(cria_peca('X'), arg)
+    Os = conta_pecas(cria_peca('O'), arg)
+
+    return ganhadores <= 1 and abs(Xs - Os) <= 1 and Xs <= 3 and Os <= 3
 
 
 def eh_posicao_livre(t, p):
@@ -312,19 +408,10 @@ def tabuleiros_iguais(t1, t2):
     # tabuleiros_iguais: tabuleiro x tabuleiro -> booleano
     """Devolve True apenas se t1 e t2 sao tabuleiros e sao iguais."""
 
-    return eh_tabuleiro(t1) and eh_tabuleiro(t2) and t1 == t2
-
-
-def linha_para_str(t, l):
-    # linha_para_str: tabuleiro x str -> str
-    """Devolve a cadeia de caracteres que representa a linha do tabuleiro."""
-
-    out = l + ' '
-
-    for j in obter_vetor(t, l):
-        out += peca_para_str(j) + '-'
-
-    return out[:-1] + '\n'
+    return (
+        eh_tabuleiro(t1) and eh_tabuleiro(t2) and
+        all(pecas_iguais(t1[n], t2[n]) for n in range(9))
+    )
 
 
 def tabuleiro_para_str(t):
@@ -426,78 +513,66 @@ def obter_fase(t):
         return 'colocar'
 
 
+def eh_movimento_valido(t, j, mov):
+    # eh_movimento_valido: tabuleiro x peca x tuplo de posicoes -> booleano
+    """Devolve True caso o movimento introduzido pelo jogador seja valido."""
+
+    ps_adjs = obter_posicoes_adjacentes(mov[0])
+    ps_livres = obter_posicoes_livres(t)
+
+    return (
+        pecas_iguais(obter_peca(t, mov[0]), j) and
+        pertence_pos(mov[1], ps_livres) and pertence_pos(mov[1], ps_adjs) or
+        (all(not pertence_pos(p, ps_livres) for p in ps_adjs) and
+        posicoes_iguais(*mov))
+    )
+
+
 def obter_movimento_manual(t , j):
     # obter_movimento_manual: tabuleiro x peca -> tuplo de posicoes
     """Devolve um tuplo com uma ou duas posicoes que representam uma posicao ou
         um movimento introduzido manualmente pelo jogador."""
 
-    fase = obter_fase(t)
+    if obter_fase(t) == 'colocar':
+        mov = obter_colocacao_manual(t)
+        if mov:
+            return mov
+    else:
+        m_str = input('Turno do jogador. Escolha um movimento: ')
 
-    if fase == 'colocar':
-        return colocar_obter_movimento_manual(t)
+        if (
+            len(m_str) == 4 and
+            m_str[0] in ('a', 'b', 'c') and m_str[1] in ('1', '2', '3') and
+            m_str[2] in ('a', 'b', 'c') and m_str[3] in ('1', '2', '3')
+        ):
+            p1 = cria_posicao(m_str[0], m_str[1])
+            p2 = cria_posicao(m_str[2], m_str[3])
+            mov = (p1, p2)
 
-    elif fase == 'mover':
-        return mover_obter_movimento_manual(t, j)
+            if eh_movimento_valido(t, j, mov):
+                return mov
+
+    raise ValueError('obter_movimento_manual: escolha invalida')
 
 
-def colocar_obter_movimento_manual(t):
-    # colocar_obter_movimento_manual: tabuleiro x -> tuplos de posicoes
+def obter_colocacao_manual(t):
+    # obter_colocacao_manual: tabuleiro -> tuplos de posicoes
     """Devolve um tuplo com uma posicao que representa uma posicao introduzida
         manualmente pelo jogador durante a fase de colocacao."""
 
     p_str = input('Turno do jogador. Escolha uma posicao: ')
 
-    valid = (
+    if (
         len(p_str) == 2 and
         p_str[0] in ('a', 'b', 'c') and p_str[1] in ('1', '2', '3')
-    )
-
-    if valid:
+    ):
 
         ps_livres = obter_posicoes_livres(t)
 
         p = cria_posicao(p_str[0], p_str[1])
 
-        valid *= p in ps_livres
-
-        if valid:
+        if pertence_pos(p, ps_livres):
             return (p, )
-
-    raise ValueError('obter_movimento_manual: escolha invalida')
-
-
-def mover_obter_movimento_manual(t, j):
-    # mover_obter_movimento_manual: tabuleiro x peca -> tuplo de posicoes
-    """Devolve um tuplo com duas posicoes que representam um movimento
-        introduzido manualmente pelo jogador durante a fase de movimento."""
-
-    m_str = input('Turno do jogador. Escolha um movimento: ')
-
-    valid = (
-        len(m_str) == 4 and
-        m_str[0] in ('a', 'b', 'c') and m_str[1] in ('1', '2', '3') and
-        m_str[2] in ('a', 'b', 'c') and m_str[3] in ('1', '2', '3')
-    )
-
-    if valid:
-
-        p1 = cria_posicao(m_str[0], m_str[1])
-        p2 = cria_posicao(m_str[2], m_str[3])
-
-        ps_adjs = obter_posicoes_adjacentes(p1)
-        ps_livres = obter_posicoes_livres(t)
-
-        valid *= (
-            pecas_iguais(obter_peca(t, p1), j) and
-            p2 in ps_livres and p2 in ps_adjs or
-            (all(p not in ps_livres for p in ps_adjs) and
-             posicoes_iguais(p1, p2))
-        )
-
-        if valid:
-            return (p1, p2)
-
-    raise ValueError('obter_movimento_manual: escolha invalida')
 
 
 def obter_movimento_auto(t, j, s):
@@ -505,17 +580,75 @@ def obter_movimento_auto(t, j, s):
     """Devolve um tuplo com uma ou duas posicoes que representam uma posicao ou
         um movimento escolhido automaticamente."""
 
-    fase = obter_fase(t)
+    if obter_fase(t) == 'colocar':
+        return obter_colocacao_auto(t, j)
 
-    if fase == 'colocar':
-        return colocar_obter_movimento_auto(t, j)
+    elif s == 'facil':
+        return obter_movimento_auto_facil(t, j)
 
-    elif fase == 'mover':
-        return mover_obter_movimento_auto(t, j, s)
+    elif s == 'normal':
+        return minimax(t, j, 1)
+
+    elif s == 'dificil':
+        return minimax(t, j, 5)
 
 
-def colocar_obter_movimento_auto(t, j):
-    # colocar_obter_movimento_auto: tabuleiro x peca -> tuplo de posicoes
+def obter_movimento_auto_facil(t, j):
+    # obter_movimento_auto_facil: tabuleiro x peca x str -> tuplo de posicoes
+    """Devolve um tuplo com duas posicoes que representam uma posicao ou
+        um movimento escolhido automaticamente na fase de movimento na
+        dificuldade facil."""
+
+    ps_livres = obter_posicoes_livres(t)
+    ps_jogador = obter_posicoes_jogador(t, j)
+
+    for p in ps_jogador:
+        ps_adjacentes = obter_posicoes_adjacentes(p)
+        for adj in ps_adjacentes:
+            if pertence_pos(adj, ps_livres):
+                return (p, adj)
+    return (ps_jogador[0], ps_jogador[0])
+
+
+def eh_melhor(j, novo_val, max_val):
+    # eh_melhor: peca x N x N -> booleano
+    """Devolve True caso, da perspectiva do jogador j, o valor do novo
+        tabuleiro seja melhor que melhor valor anterior."""
+
+    return ((pecas_iguais(j, cria_peca('X')) and novo_val > max_val) or
+            (pecas_iguais(j, cria_peca('O')) and novo_val < max_val))
+
+
+def minimax(t, j, profundidade):
+    # minimax: tabuleiro x peca x N -> tuplo de posicoes
+    """Devolve um tuplo de duas posicoes que representam um movimento escolhido
+        pelo algoritmo de minimax."""
+
+    def aux_minimax(t, j, d, movs):
+        if not pecas_iguais(obter_ganhador(t), cria_peca(' ')) or d == 0:
+            return peca_para_inteiro(obter_ganhador(t)), movs
+        melhor_movs = ()
+        ps_livres = obter_posicoes_livres(t)
+        oponente = obter_oponente(j)
+        max_val = peca_para_inteiro(oponente)
+        for p in obter_posicoes_jogador(t, j):
+            for adj in obter_posicoes_adjacentes(p):
+                if pertence_pos(adj, ps_livres):
+                    mov = (p, adj)
+                    novo_t = move_peca(cria_copia_tabuleiro(t), *mov)
+                    novo_val, novo_movs = \
+                        aux_minimax(novo_t, oponente, d - 1, movs + (mov,))
+                    if not melhor_movs or eh_melhor(j, novo_val, max_val):
+                        max_val, melhor_movs = novo_val, novo_movs
+        return max_val, melhor_movs
+
+    val, movs = aux_minimax(t, j, profundidade, ())
+    if len(movs) != 0:
+        return movs[0]
+
+
+def obter_colocacao_auto(t, j):
+    # obter_colocacao_auto: tabuleiro x peca -> tuplo de posicoes
     """Devolve um tuplo com uma posicao que representam uma posicao escolhida
         automaticamente na fase de colocacao."""
 
@@ -542,7 +675,7 @@ def vitoria(t, j):
 
     for s in ('a', 'b', 'c', '1', '2', '3'):
         vec = obter_vetor(t, s)
-        if vec.count(j) == 2:
+        if conta_pecas(j, vec) == 2:
             dois_em_linha += (s, )
 
     for p in obter_posicoes_livres(t):
@@ -564,7 +697,7 @@ def centro(t, _):
 
     p = cria_posicao('b', '2')
 
-    if p in obter_posicoes_livres(t):
+    if pertence_pos(p, obter_posicoes_livres(t)):
         return p
 
 
@@ -580,7 +713,7 @@ def canto_vazio(t, _):
     for l in ls:
         for c in cs:
             p = cria_posicao(c, l)
-            if p in ps_livres:
+            if pertence_pos(p, ps_livres):
                 return p
 
 
@@ -596,75 +729,8 @@ def lateral_vazio(t, _):
     for c in cs:
         for l in ls:
             p = cria_posicao(c, l)
-            if posicao_para_inteiro(p) != 0 and p in ps_livres:
+            if posicao_para_inteiro(p) != 0 and pertence_pos(p, ps_livres):
                 return p
-
-
-def mover_obter_movimento_auto(t, j, dif):
-    # mover_obter_movimento_auto: tabuleiro x peca x str -> tuplo de posicoes
-    """Devolve um tuplo de duas posicoes que representam um movimento escolhido
-        automaticamente na fase de movimento."""
-
-    mov = None
-
-    if dif == 'normal':
-        mov = minimax(t, j, 1)
-    elif dif == 'dificil':
-        mov = minimax(t, j, 5)
-
-    if mov:
-        return mov
-
-    ps_livres = obter_posicoes_livres(t)
-    ps_jogador = obter_posicoes_jogador(t, j)
-
-    for p in ps_jogador:
-        ps_adjacentes = obter_posicoes_adjacentes(p)
-        for adj in ps_adjacentes:
-            if adj in ps_livres:
-                return (p, adj)
-
-
-def minimax(t, j, profundidade):
-    # minimax: tabuleiro x peca x N -> tuplo de posicoes
-    """Devolve um tuplo de duas posicoes que representam um movimento escolhido
-        pelo algoritmo de minimax."""
-
-    def para_alterar(j, novo_val, max_val):
-        return (
-            (pecas_iguais(j, cria_peca('X')) and novo_val > max_val) or
-            (pecas_iguais(j, cria_peca('O')) and novo_val < max_val)
-        )
-
-    def aux_minimax(t, j, d, movs):
-        if not pecas_iguais(obter_ganhador(t), cria_peca(' ')) or d == 0:
-            return peca_para_inteiro(obter_ganhador(t)), movs
-
-        else:
-            melhor_movs = None
-            ps_livres = obter_posicoes_livres(t)
-            oponente = obter_oponente(j)
-            max_val = peca_para_inteiro(oponente)
-            for p in obter_posicoes_jogador(t, j):
-                for adj in obter_posicoes_adjacentes(p):
-                    if adj in ps_livres:
-                        mov = (p, adj)
-                        novo_t = cria_copia_tabuleiro(t)
-                        move_peca(novo_t, *mov)
-                        novo_val, novo_movs = \
-                            aux_minimax(novo_t, oponente, d - 1, movs + (mov,))
-
-                        if (
-                            not melhor_movs or
-                            para_alterar(j, novo_val, max_val)
-                        ):
-                            max_val, melhor_movs = novo_val, novo_movs
-
-            return max_val, melhor_movs
-
-    val, movs = aux_minimax(t, j, profundidade, ())
-    if len(movs) != 0:
-        return movs[0]
 
 
 def moinho(j, dif):
@@ -708,4 +774,3 @@ def jogar_turno(t, j, dif, turno):
         coloca_peca(t, turno, mov[0])
     else:
         move_peca(t, mov[0], mov[1])
-
