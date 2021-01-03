@@ -1,7 +1,7 @@
 # 99266 Luis Fonseca
 
 ###############################################################################
-# FUNCOES AUXILIARES
+# FUNCOES GENERICAS
 ###############################################################################
 def pertence(el, els, teste):
     # pertence: el x iter x func -> bool
@@ -20,46 +20,6 @@ def conta(el, els, teste):
             cnt += 1
 
     return cnt
-
-
-def eh_adjacente(p1_c, p1_l, p2_c, p2_l):
-    # eh_adjacente: inteiro x inteiro x inteiro x inteiro -> booleano
-    """Devolve um booleano caso a pseudo posicao p2 representada por p2_c e
-        p2_l seja valida e tenha uma relacao de adjacencia com a pseudo posicao
-        representada por p1_c e p2_l"""
-
-    delta_c = p2_c - p1_c
-    delta_l = p2_l - p1_l
-
-    return (
-        (p1_c != p2_c or p1_l != p2_l) and  # p1 != p2
-        0 <= p2_c < 3 and 0 <= p2_l < 3 and # p2 eh valida
-        (delta_c == 0 or delta_l == 0 or    # p2 eh horizontal ou vertical a p1
-        (p1_l * 3 + p1_c) % 2 == 0)     # p2 eh canto ou centro e diagonal a p1
-    )
-
-
-def eh_vitoria(vet):
-    # eh_vitoria: tuplo de pecas -> booleano
-    """Devolve True caso o tuplo de pecas consista em 3 pecas do mesmo
-        jogador."""
-
-    return (
-        conta_pecas(cria_peca('X'), vet) == 3 or
-        conta_pecas(cria_peca('O'), vet) == 3
-    )
-
-
-def linha_para_str(t, l):
-    # linha_para_str: tabuleiro x str -> str
-    """Devolve a cadeia de caracteres que representa a linha do tabuleiro."""
-
-    out = l + ' '
-
-    for j in obter_vetor(t, l):
-        out += peca_para_str(j) + '-'
-
-    return out[:-1] + '\n'
 
 
 ###############################################################################
@@ -88,6 +48,7 @@ def cria_posicao(c, l):
         raise ValueError('cria_posicao: argumentos invalidos')
 
     return [c, l]
+
 
 def cria_copia_posicao(p):
     # cria_copia_posicao: posicao -> posicao
@@ -146,27 +107,41 @@ def posicao_para_inteiro(p):
     return pos_l * 3 + pos_c
 
 
+def eh_adjacente(p1, p2):
+    # eh_adjacente: posicao x posicao -> booleano
+    """Devolve True caso p1 e p2 sejam adjacentes."""
+
+    p1_i, p2_i = posicao_para_inteiro(p1), posicao_para_inteiro(p2)
+    p1_l, p1_c = p1_i // 3, p1_i % 3
+    p2_l, p2_c = p2_i // 3, p2_i % 3
+
+    return (
+        not posicoes_iguais(p1, p2) and     # p1 != p2
+        (p2_l == p1_l or p2_c == p1_c or    # p2 eh horizontal ou vertical a p1
+        (p1_l * 3 + p1_c) % 2 == 0)     # p2 eh canto ou centro e diagonal a p1
+    )
+
+
 def obter_posicoes_adjacentes(p):
     # obter_posicoes_adjacentes: posicao -> tuplo de posicoes
     """Devolve um tuplo com as posicoes adjacentes a posicao p de acordo com a
         ordem de leitura do tabuleiro."""
 
-    pos_c = ord(obter_pos_c(p)) - ord('a')
-    pos_l = ord(obter_pos_l(p)) - ord('1')
+    pos_i = posicao_para_inteiro(p)
+    pos_l, pos_c = pos_i // 3, pos_i % 3;
 
     pos_adjs = ()
 
     for adj_rel_l in range(-1, 2):
         for adj_rel_c in range(-1, 2):
+            if 0 <= pos_c + adj_rel_c < 3 and 0 <= pos_l + adj_rel_l < 3:
 
-            adj_c = pos_c + adj_rel_c
-            adj_l = pos_l + adj_rel_l
-
-            if eh_adjacente(pos_c, pos_l, adj_c, adj_l):
-                adj_c = chr(adj_c + ord('a'))
-                adj_l = chr(adj_l + ord('1'))
+                adj_c = chr(pos_c + adj_rel_c + ord('a'))
+                adj_l = chr(pos_l + adj_rel_l + ord('1'))
                 adj = cria_posicao(adj_c, adj_l)
-                pos_adjs += (adj,)
+
+                if eh_adjacente(p, adj):
+                    pos_adjs += (adj,)
 
     return pos_adjs
 
@@ -371,6 +346,17 @@ def move_peca(t, p1, p2):
     return coloca_peca(t, j, p2)
 
 
+def eh_vitoria(vet):
+    # eh_vitoria: tuplo de pecas -> booleano
+    """Devolve True caso o tuplo de pecas consista em 3 pecas do mesmo
+        jogador."""
+
+    return (
+        conta_pecas(cria_peca('X'), vet) == 3 or
+        conta_pecas(cria_peca('O'), vet) == 3
+    )
+
+
 def eh_tabuleiro(arg):
     # eh_tabuleiro: universal -> booleano
     """Devolve True caso o seu argumento seja um TAD tabuleiro e False caso
@@ -418,8 +404,13 @@ def tabuleiro_para_str(t):
     # tabuleiro_para_str: tabuleiro -> str
     """Devolve a cadeia de carateres que representa o tabuleiro."""
 
-    separador = '| \ | / |'
+    def linha_para_str(t, l):
+        out = l + ' '
+        for j in obter_vetor(t, l):
+            out += peca_para_str(j) + '-'
+        return out[:-1] + '\n'
 
+    separador = '| \ | / |'
     out = ''
 
     for c in ('a', 'b', 'c'):
