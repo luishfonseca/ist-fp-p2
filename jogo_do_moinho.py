@@ -115,10 +115,12 @@ def eh_adjacente(p1, p2):
     p1_l, p1_c = p1_i // 3, p1_i % 3
     p2_l, p2_c = p2_i // 3, p2_i % 3
 
-    return (
-        not posicoes_iguais(p1, p2) and     # p1 != p2
-        (p2_l == p1_l or p2_c == p1_c or    # p2 eh horizontal ou vertical a p1
-        (p1_l * 3 + p1_c) % 2 == 0)     # p2 eh canto ou centro e diagonal a p1
+    # p2 != p1 AND [
+    #   ( p2 eh horizontal OR p2 eh vertical a p1 ) OR
+    #   ( p2 eh canto ou centro AND p2 eh diagonal a p1 )
+    # ]
+    return not (
+        posicoes_iguais(p1, p2) or p2_l != p1_l and p2_c != p1_c and p2_i % 2
     )
 
 
