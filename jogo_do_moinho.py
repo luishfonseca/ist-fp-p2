@@ -511,12 +511,11 @@ def eh_movimento_valido(t, j, mov):
     """Devolve True caso o movimento introduzido pelo jogador seja valido."""
 
     ps_adjs = obter_posicoes_adjacentes(mov[0])
-    ps_livres = obter_posicoes_livres(t)
 
     return (
         pecas_iguais(obter_peca(t, mov[0]), j) and
-        pertence_pos(mov[1], ps_livres) and pertence_pos(mov[1], ps_adjs) or
-        (all(not pertence_pos(p, ps_livres) for p in ps_adjs) and
+        eh_posicao_livre(t, mov[1]) and pertence_pos(mov[1], ps_adjs) or
+        (not any(eh_posicao_livre(t, p) for p in ps_adjs) and
         posicoes_iguais(*mov))
     )
 
@@ -560,11 +559,9 @@ def obter_colocacao_manual(t):
         p_str[0] in ('a', 'b', 'c') and p_str[1] in ('1', '2', '3')
     ):
 
-        ps_livres = obter_posicoes_livres(t)
-
         p = cria_posicao(p_str[0], p_str[1])
 
-        if pertence_pos(p, ps_livres):
+        if eh_posicao_livre(t, p):
             return (p, )
 
 
@@ -592,13 +589,12 @@ def obter_movimento_auto_facil(t, j):
         um movimento escolhido automaticamente na fase de movimento na
         dificuldade facil."""
 
-    ps_livres = obter_posicoes_livres(t)
     ps_jogador = obter_posicoes_jogador(t, j)
 
     for p in ps_jogador:
         ps_adjacentes = obter_posicoes_adjacentes(p)
         for adj in ps_adjacentes:
-            if pertence_pos(adj, ps_livres):
+            if eh_posicao_livre(t, adj):
                 return (p, adj)
     return (ps_jogador[0], ps_jogador[0])
 
@@ -621,12 +617,11 @@ def minimax(t, j, profundidade):
         if not pecas_iguais(obter_ganhador(t), cria_peca(' ')) or d == 0:
             return peca_para_inteiro(obter_ganhador(t)), movs
         melhor_movs = ()
-        ps_livres = obter_posicoes_livres(t)
         oponente = obter_oponente(j)
         max_val = peca_para_inteiro(oponente)
         for p in obter_posicoes_jogador(t, j):
             for adj in obter_posicoes_adjacentes(p):
-                if pertence_pos(adj, ps_livres):
+                if eh_posicao_livre(t, adj):
                     mov = (p, adj)
                     novo_t = move_peca(cria_copia_tabuleiro(t), *mov)
                     novo_val, novo_movs = \
@@ -690,7 +685,7 @@ def centro(t, _):
 
     p = cria_posicao('b', '2')
 
-    if pertence_pos(p, obter_posicoes_livres(t)):
+    if eh_posicao_livre(t, p):
         return p
 
 
@@ -701,12 +696,10 @@ def canto_vazio(t, _):
     cs = ('a', 'c')
     ls = ('1', '3')
 
-    ps_livres = obter_posicoes_livres(t)
-
     for l in ls:
         for c in cs:
             p = cria_posicao(c, l)
-            if pertence_pos(p, ps_livres):
+            if eh_posicao_livre(t, p):
                 return p
 
 
@@ -717,12 +710,10 @@ def lateral_vazio(t, _):
     cs = ('a', 'b', 'c')
     ls = ('1', '2', '3')
 
-    ps_livres = obter_posicoes_livres(t)
-
     for c in cs:
         for l in ls:
             p = cria_posicao(c, l)
-            if posicao_para_inteiro(p) != 0 and pertence_pos(p, ps_livres):
+            if posicao_para_inteiro(p) != 0 and eh_posicao_livre(t, p):
                 return p
 
 
